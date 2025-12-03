@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCREAM GAME WIKRAMA</title>
+    <title>Scream Game Wikrama</title>
 
     <style>
         body {
@@ -26,45 +26,69 @@
             border-top-right-radius: 50% 30%;
         }
 
-        .sidebar {
+        .progress-bar {
             position: absolute;
-            left: 50px;
-            top: 40px;
-            width: 120px;
-            height: 80%;
-            border: 2px solid #000;
+            left: 55px;
+            top: 60px;
+            width: 45px;
+            height: 77%;
+            background: #ececec;
             border-radius: 20px;
+            border: 2px solid #777;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 100%;
+            height: 0%;
+            position: absolute;
+            bottom: 0;
+            background: linear-gradient(to top, #123786, #0d255a);
+            transition: height 0.2s ease;
         }
 
         .icon-list {
             position: absolute;
-            left: 130px;
+            left: 120px;
             top: 90px;
             display: flex;
             flex-direction: column;
-            gap: 100px;
+            gap: 70px;
         }
 
-        .icon-list img {
+        .icon-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .icon-item img {
             width: 45px;
             height: 45px;
             opacity: 0.8;
             transition: 0.25s;
         }
 
-        .icon-list img.active {
+        .icon-item img.active {
             opacity: 1;
             transform: scale(1.2);
         }
 
+        .icon-label {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0b0b0b;
+        }
+
         .title {
             text-align: center;
-            margin-top: 120px;
+            margin-top: 205px;
             font-size: 70px;
             font-weight: 800;
             color: #0b0b0b;
             letter-spacing: 3px;
             text-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+            animation: zoom 1.3s infinite ease-in-out;
         }
 
         #message {
@@ -107,6 +131,7 @@
             font-size: 60px;
             font-weight: bold;
             text-align: center;
+            display: none;
             margin-top: 10px;
         }
 
@@ -140,7 +165,7 @@
             color: #ffffff;
             border: none;
             padding: 10px 20px;
-            border-radius: 8px;
+            border-radius: 20px;
             cursor: pointer;
             font-size: 18px;
             transition: 0.3s;
@@ -156,18 +181,39 @@
             100% { transform: scale(1); }
         }
 
-        .icon-list img.pop {
-            animation: pop 0.3s ease;
+        @keyframes zoom {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.10); }
+            100% { transform: scale(1); }
         }
-
     </style>
+</head>
+
+<body>
+
     <div class="sidebar"></div>
 
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
     <div class="icon-list">
-        <img id="i-quest" src="images/1.png">
-        <img id="i-gold" src="images/2.png">
-        <img id="i-silver" src="images/3.png">
-        <img id="i-bronze" src="images/4.png">
+        <div class="icon-item" style="top: 40px;">
+            <img id="i-quest" src="images/1.png">
+            <span class="icon-label">1000</span>
+        </div>
+        <div class="icon-item" style="top: 120px;">
+            <img id="i-gold" src="images/2.png">
+            <span class="icon-label">800</span>
+        </div>
+        <div class="icon-item" style="top: 200px;">
+            <img id="i-silver" src="images/3.png">
+            <span class="icon-label">500</span>
+        </div>
+        <div class="icon-item" style="top: 280px;">
+            <img id="i-bronze" src="images/4.png">
+            <span class="icon-label">200</span>
+        </div>
     </div>
 
     <div class="score-box">
@@ -175,16 +221,16 @@
         <img src="images/wikrama.png">
     </div>
 
-    <div id="timer">00</div>
     <div class="title">TERIAK SEKARANG</div>
     <div id="message">Gak Kedengeran</div>
     <button id="startBtn">TERIAK SEKARANG</button>
+
     <div class="wave"></div>
 
     <div id="resultModal" class="modal">
         <div class="modal-content">
             <h2>Terima Kasih</h2>
-            <img src="images/karakter.png" width="120">
+            <img id="rewardImage" src="images/karakter.png" width="120">
             <p>Score Anda: <span id="finalScore">0</span></p>
             <p id="finalReward"></p>
             <button id="restartBtn">Restart</button>
@@ -195,72 +241,73 @@
         const startBtn = document.getElementById('startBtn');
         const message = document.getElementById('message');
         const scoreEl = document.getElementById('score');
-        const timerEl = document.getElementById('timer');
         const resultModal = document.getElementById('resultModal');
         const finalScoreEl = document.getElementById('finalScore');
         const finalRewardEl = document.getElementById('finalReward');
-        const restartBtn = document.getElementById('restartBtn');
+        const progressFill = document.getElementById('progressFill');
 
         let isPlaying = false;
         let score = 0;
         let audioContext, analyser, dataArray, micSource;
         let gameStartTime = 0;
-        let gameDuration = 10;
+        let gameDuration = 5;
         let rafId = null;
 
-        function pad(n) { return n < 10 ? '0' + n : '' + n; }
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                startBtn.click();
+            }, 500);
+        });
 
-        function updateGiftIcon(level) {
+        function updateGiftIcon(score) {
             document.querySelectorAll('.icon-list img').forEach(img => {
                 img.classList.remove('active', 'pop');
             });
 
             let activeId;
-            if (level <= 20) activeId = 'i-quest';
-            else if (level <= 40) activeId = 'i-gold';
-            else if (level <= 70) activeId = 'i-silver';
-            else activeId = 'i-bronze';
 
-            const activeIcon = document.getElementById(activeId);
-            activeIcon.classList.add('active', 'pop');
+            if (score >= 1000) activeId = 'i-quest';
+            else if (score >= 800) activeId = 'i-gold';
+            else if (score >= 500) activeId = 'i-silver';
+            else if (score >= 200) activeId = 'i-bronze';
+
+            if (activeId) {
+                const icon = document.getElementById(activeId);
+                icon.classList.add('active', 'pop');
+            }
         }
 
-        function getLevelMessage(level) {
-            if (level <= 20) return "Quest Dapat!";
-            else if (level <= 40) return "Gold Dapat!";
-            else if (level <= 70) return "Silver Dapat!";
-            else return "Bronze Dapat!";
+        function updateProgressBar() {
+            let percent = Math.min((score / 1000) * 100, 100);
+            progressFill.style.height = percent + "%";
         }
 
-        startBtn.addEventListener('click', async function () {
+        function getReward(score) {
+            if (score >= 1000) return "Quest Dapat!";
+            else if (score >= 800) return "Gold Dapat!";
+            else if (score >= 500) return "Silver Dapat!";
+            else if (score >= 200) return "Bronze Dapat!";
+            else return "Belum dapat hadiah";
+        }
+
+        startBtn.addEventListener('click', async () => {
             if (isPlaying) return;
 
             isPlaying = true;
             score = 0;
             scoreEl.innerText = score;
-            message.innerText = 'Mulai! Teriakkan sekencang mungkin!';
+            progressFill.style.height = "0%";
+            message.innerText = "Mulai! Teriakkan sekencang mungkin!";
             startBtn.disabled = true;
-            startBtn.innerText = 'Playing...';
-            finalRewardEl.innerText = '';
+            startBtn.innerText = "Playing...";
 
             try {
                 await startMic();
                 gameStartTime = Date.now();
-                animateTimer();
                 detectSound();
-            } catch (err) {
-                console.error(err);
-                message.innerText = 'Tidak dapat mengakses mikrofon. Izinkan akses mikrofon.';
-                stopGame();
+            } catch {
+                message.innerText = "Izinkan akses mikrofon.";
             }
-        });
-
-        restartBtn.addEventListener('click', function () {
-            resultModal.classList.remove('show');
-            startBtn.disabled = false;
-            startBtn.innerText = 'TERIAK SEKARANG';
-            scoreEl.innerText = 0;
-            message.innerText = 'Gak Kedengeran';
         });
 
         async function startMic() {
@@ -283,16 +330,17 @@
             }
             let rms = Math.sqrt(sum / dataArray.length);
 
-            let level = Math.min(100, Math.floor(rms * 300));
-
-            updateGiftIcon(level);
+            let level = Math.min(100, Math.floor(rms * 100));
 
             if (level > 10) {
                 score += Math.round(level / 10);
                 scoreEl.innerText = score;
-                message.innerText = getLevelMessage(level);
+                updateProgressBar();
+                updateGiftIcon(score);
+
+                message.innerText = "TERIAK LAGI!";
             } else {
-                message.innerText = 'Suara Kamu Kurang Kedengeran';
+                message.innerText = "Suara terlalu kecil";
             }
 
             const elapsed = (Date.now() - gameStartTime) / 1000;
@@ -300,47 +348,31 @@
                 endGame();
                 return;
             }
-            rafId = requestAnimationFrame(detectSound);
-        }
 
-        function animateTimer() {
-            const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
-            const remain = Math.max(0, gameDuration - elapsed);
-            timerEl.innerText = pad(remain);
-            if (remain > 0) {
-                setTimeout(animateTimer, 250);
-            }
+            rafId = requestAnimationFrame(detectSound);
         }
 
         function endGame() {
             isPlaying = false;
             if (rafId) cancelAnimationFrame(rafId);
-
-            try {
-                if (audioContext && audioContext.state !== 'closed')
-                    audioContext.close();
-            } catch { }
+            try { audioContext.close(); } catch {}
 
             finalScoreEl.innerText = score;
+            finalRewardEl.innerText = getReward(score);
+            const rewardImage = document.getElementById('rewardImage');
+            if (score >= 1000) rewardImage.src = "images/Q.png";
+            else if (score >= 800) rewardImage.src = "images/G.png";
+            else if (score >= 500) rewardImage.src = "images/S.png";
+            else if (score >= 200) rewardImage.src = "images/B.png";
+            else rewardImage.src = "images/karakter.png";
 
-            let lastLevel = Math.min(100, score * 10);
-            finalRewardEl.innerText = "Hadiah Terakhir: " + getLevelMessage(lastLevel);
-
-            resultModal.classList.add('show');
+            resultModal.classList.add("show");
         }
 
-        function stopGame() {
-            isPlaying = false;
-            startBtn.disabled = false;
-            startBtn.innerText = 'TERIAK SEKARANG';
-            if (rafId) cancelAnimationFrame(rafId);
-            try {
-                if (audioContext && audioContext.state !== 'closed')
-                    audioContext.close();
-            } catch { }
-        }
+        document.getElementById("restartBtn").addEventListener("click", function () {
+            window.location.href = "/opening";
+        });
     </script>
 
-    </body>
-
+</body>
 </html>

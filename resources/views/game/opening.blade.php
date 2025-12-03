@@ -17,27 +17,36 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
+        }
+
+        video.bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
         }
 
         .container {
             text-align: center;
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
 
         .play-btn {
-            width: 150px;
-            height: 150px;
-            background: linear-gradient(135deg, #ffd700, #ffb347);
+            width: 110px;
+            height: 110px;
+            background: linear-gradient(135deg, #123786, #123786);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.4);
             transition: all 0.3s ease;
             margin: 0 auto 30px;
             border: none;
@@ -46,7 +55,7 @@
 
         .play-btn:hover {
             transform: scale(1.1);
-            box-shadow: 0 12px 35px rgba(255, 215, 0, 0.6);
+            box-shadow: 0 12px 35px rgba(255, 255, 255, 0.6);
         }
 
         .play-btn:active {
@@ -72,23 +81,11 @@
             margin-bottom: 20px;
         }
 
-        .img-right {
-            position: absolute;
-            right: 0;
-            width: 50%;
-            height: 100%;
-            background-image: url('https://via.placeholder.com/800x600/4a6fa5/ffffff?text=Wikrama');
-            background-size: cover;
-            background-position: center;
-            clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
-            z-index: 0;
-        }
-
         #countdown {
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.9);
-            color: #ffd700;
+            color: #ffffff;
             font-size: 150px;
             font-weight: 700;
             display: flex;
@@ -97,7 +94,7 @@
             visibility: hidden;
             opacity: 0;
             transition: visibility 0s, opacity 0.5s;
-            z-index: 2;
+            z-index: 3;
         }
 
         #countdown.show {
@@ -107,11 +104,16 @@
     </style>
 </head>
 <body>
-    <div class="img-right"></div>
+
+    <video class="bg-video" autoplay muted loop>
+        <source src="/vidio/vidio.mp4" type="video/mp4">
+    </video>
+
     <div class="container">
         <button class="play-btn" id="playBtn"></button>
         <h1 class="title">SCREAM GAME WIKRAMA</h1>
     </div>
+
     <div id="countdown"></div>
 
     <script>

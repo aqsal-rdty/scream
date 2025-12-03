@@ -16,13 +16,12 @@ class GameController extends Controller
     public function submitScore(Request $request)
     {
         $request->validate([
-            'score' => 'required|integer'
+            'score' => 'required|integer',
+            'name' => 'required|string'
         ]);
 
-        $userId = Auth::check() ? Auth::id() : null;
-
         Score::create([
-            'user_id' => $userId,
+            'name' => $request->name,
             'score' => $request->score
         ]);
 
@@ -31,17 +30,9 @@ class GameController extends Controller
 
     public function leaderboard()
     {
-        $data = Score::with('user')
-            ->orderBy('score', 'desc')
+        $data = Score::orderBy('score', 'desc')
             ->take(10)
-            ->get()
-            ->map(function($item){
-                return [
-                    'name' => $item->user ? $item->user->name : 'Anon',
-                    'score' => $item->score,
-                    'created_at' => $item->created_at->toDateTimeString()
-                ];
-            });
+            ->get(['name', 'score', 'created_at']);
 
         return response()->json($data);
     }
