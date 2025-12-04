@@ -2,6 +2,7 @@
 <html lang="id">
 
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scream Game Wikrama</title>
@@ -155,7 +156,7 @@
         .modal-content {
             background: #fff;
             padding: 25px;
-            border-radius: 12px;
+            border-radius: 15px;
             width: 300px;
             text-align: center;
         }
@@ -224,6 +225,13 @@
     <div class="title">TERIAK SEKARANG</div>
     <div id="message">Gak Kedengeran</div>
     <button id="startBtn">TERIAK SEKARANG</button>
+
+    <div id="leaderboard" style="position: fixed; bottom: 20px; right: 20px; 
+        background: rgba(255,255,255,0.9); padding: 15px; border-radius: 10px; 
+        width: 250px; max-height: 400px; overflow-y: auto; display:none;">
+        <h3 style="text-align:center; margin-bottom:10px;">Leaderboard</h3>
+        <ul id="leaderboardList" style="list-style:none; padding:0; margin:0;"></ul>
+    </div>
 
     <div class="wave"></div>
 
@@ -367,6 +375,28 @@
             else rewardImage.src = "images/karakter.png";
 
             resultModal.classList.add("show");
+
+            sendScore(score);
+        }
+
+        async function sendScore(scoreValue) {
+            const playerName = localStorage.getItem('playerName');
+            try {
+                await fetch('/submit-score', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        score: scoreValue,
+                        name: playerName
+                    })
+                });
+                console.log("Respon dari server:", result);
+            } catch (e) {
+                console.error('Error submitting score:', e);
+            }
         }
 
         document.getElementById("restartBtn").addEventListener("click", function () {

@@ -20,9 +20,21 @@ class GameController extends Controller
             'name' => 'required|string'
         ]);
 
+        $reward = '';
+        if ($request->score >= 1000) {
+            $reward = 'Quest';
+        } elseif ($request->score >= 800) {
+            $reward = 'Gold';
+        } elseif ($request->score >= 500) {
+            $reward = 'Silver';
+        } elseif ($request->score >= 200) {
+            $reward = 'Bronze';
+        }
+
         Score::create([
             'name' => $request->name,
-            'score' => $request->score
+            'score' => $request->score,
+            'reward' => $reward,
         ]);
 
         return response()->json(['success' => true]);
@@ -30,10 +42,7 @@ class GameController extends Controller
 
     public function leaderboard()
     {
-        $data = Score::orderBy('score', 'desc')
-            ->take(10)
-            ->get(['name', 'score', 'created_at']);
-
-        return response()->json($data);
+        $scores = Score::orderBy('score', 'desc')->take(10)->get(['name', 'score', 'reward']);
+        return response()->json($scores);
     }
 }
