@@ -45,4 +45,10 @@ class GameController extends Controller
         $scores = Score::orderBy('score', 'desc')->take(10)->get(['name', 'score', 'reward']);
         return response()->json($scores);
     }
+
+    public function opening()
+    {
+        $leaderboard = Score::orderBy('score', 'desc')->take(10)->get(['name', 'score', 'reward']);
+        return view('game.opening', ['leaderboard' => $leaderboard]);
+    }
 }
