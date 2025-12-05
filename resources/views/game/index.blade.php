@@ -258,7 +258,7 @@
         let score = 0;
         let audioContext, analyser, dataArray, micSource;
         let gameStartTime = 0;
-        let gameDuration = 20;
+        let gameDuration = 5;
         let rafId = null;
 
         window.addEventListener('DOMContentLoaded', () => {
